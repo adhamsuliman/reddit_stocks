@@ -5,3 +5,5 @@ This repository contains python scripts which scrape r/Stocks, r/Investing, and 
 There is a dashboard which looks at this data which can be found in the following link. 
 https://datastudio.google.com/reporting/7d5c20ed-b6a6-4162-81ba-062bf869c5c0/page/z9ScB
 
+Below is the first page on the link above.
+![page_1](/images/page_1.png)
