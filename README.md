@@ -3,9 +3,13 @@
 This repository contains python scripts which will scrape r/Stocks, r/Investing, and r/StockMarket. The goal is to scrape comments where there has been a stock ticker identified within the comment. The goal is to find redditors who consistently suggest stocks which provide high returns.
 
 ## How to get up and running
+#### Reddit Application
 In order to use this repo, users must create a reddit application. Felippe Rodrigues wrote a great article on how to go about getting those credentials. The link to that article is provided below: 
 
 https://www.storybench.org/how-to-scrape-reddit-with-python/
+
+#### Python Module Requirements
+
 
 ## Current Processing Methodology
 1. Scrape Reddit 
@@ -19,8 +23,7 @@ https://www.storybench.org/how-to-scrape-reddit-with-python/
     3. Calculate the average daily return by comment where only the number of weekdays are taken into consideration.
      
 1. Export to google sheets
-   1. 
-   1. 
+   
 
 ## Dashboard
 There is a dashboard which looks at this data which can be found in the following link. 
