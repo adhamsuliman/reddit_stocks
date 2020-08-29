@@ -21,12 +21,8 @@ import yfinance as yf
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyzer = SentimentIntensityAnalyzer()
 
-#from df2gspread import df2gspread as d2g
-#import gspread
-
 # Call functions file
 from reddit_functions import *
-
 
 class subreddit:
     # Create reddit api

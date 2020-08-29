@@ -7,10 +7,16 @@ In order to use this repo, users must create a reddit application. Felippe Rodri
 https://www.storybench.org/how-to-scrape-reddit-with-python/
 
 ## Current Processing Methodology
-1. Scrape Reddit 1
-    1. Scrape by r/stocks, r/investing, r/stockmarket 2
-1. Item 2
-1. Item 3
+1. Scrape Reddit 
+    1. Scrape new posts for r/stocks, r/investing, r/stockmarket.
+    1. If a new user is identified when scraping, scrape all of that user's comments. 
+    1. Use Named Entity Recogntion (NER) to identify stocks within comments
+1. Find stock value for day comment was posted
+    1. Use yfinance to pull data for all stocks found.
+    2. Calculate the return if a redditor had bought one share the day that he/she posted the initial commment. 
+    3. Calculate the average daily return by comment where only the number of weekdays are taken into consideration.
+     
+1. Export to google sheets
    1. Item 3a
    1. Item 3b
 
