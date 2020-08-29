@@ -1,30 +1,3 @@
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# Import Modules
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-import pandas as pd
-import numpy as np 
-
-import configparser 
-from datetime import datetime, timezone, timedelta
-import gspread_dataframe as gd
-from gspread_pandas import Spread
-import json 
-import itertools
-from nltk.tokenize import word_tokenize
-from nltk.tag import pos_tag
-import praw
-from prawcore.exceptions import Forbidden
-import re 
-import time
-from tqdm import tqdm
-import yfinance as yf
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-analyzer = SentimentIntensityAnalyzer()
-
-# Call functions file
-from reddit_functions import *
-
-
 class subreddit:
     # Create reddit api
     def __init__(self):       
@@ -200,10 +173,3 @@ class subreddit:
             df_user_final.to_csv('../data/subreddit_scrape.csv', index = False)
         
         print(f'DONE! {datetime.now().date()}')
-
-
-if __name__ == "__main__":
-    subreddit = subreddit()
-    # set use_gsheet = False if you would like to use excel instead of google sheets. 
-    subreddit.main_func(['stocks','investing','StockMarket'], use_gsheet = True)
-

@@ -3,22 +3,24 @@
 This repository contains python scripts which will scrape r/Stocks, r/Investing, and r/StockMarket. The goal is to scrape comments where there has been a stock ticker identified within the comment. The goal is to find redditors who consistently suggest stocks which provide high returns.
 
 ## How to get up and running
-In order to use this repo, users must create a reddit application. Felippe Rodrigues wrote a great artile on how to go about getting those credentials. The link to that article is provided below: 
+In order to use this repo, users must create a reddit application. Felippe Rodrigues wrote a great article on how to go about getting those credentials. The link to that article is provided below: 
+
 https://www.storybench.org/how-to-scrape-reddit-with-python/
 
 ## Current Processing Methodology
 1. Scrape Reddit 
     1. Scrape new posts for r/stocks, r/investing, r/stockmarket.
     1. If a new user is identified when scraping, scrape all of that user's comments. 
-    1. Use Named Entity Recogntion (NER) to identify stocks within comments
+    1. Use Named Entity Recogntion (**NER**) to identify stocks within comments
+
 1. Find stock value for day comment was posted
     1. Use yfinance to pull data for all stocks found.
     2. Calculate the return if a redditor had bought one share the day that he/she posted the initial commment. 
     3. Calculate the average daily return by comment where only the number of weekdays are taken into consideration.
      
 1. Export to google sheets
-   1. Item 3a
-   1. Item 3b
+   1. 
+   1. 
 
 ## Dashboard
 There is a dashboard which looks at this data which can be found in the following link. 

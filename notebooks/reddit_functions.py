@@ -138,7 +138,7 @@ def combine_scrape_user(df_scrape, df_user):
     df_combined_2.columns = list(common_columns) + ['tik_change_normalized_mean','tik_change_normalized_count','first_redditor']
     
     # DD and CDC have been very common so let's remove them
-    df_combined_2 = df_combined_2[~df_combined_2.tik.isin(['DD','CDC','PE','CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS'])]    
+    df_combined_2 = df_combined_2[~df_combined_2.tik.isin(['DD','CDC','PE','CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS','NEW'])]    
 
     # Drop any uplicates that may be found
     df_combined_2.drop_duplicates(['tik_time','tik_author','tik','tik_comment'], inplace = True)    
