@@ -9,7 +9,10 @@ In order to use this repo, users must create a reddit application. Felippe Rodri
 https://www.storybench.org/how-to-scrape-reddit-with-python/
 
 #### Python Module Requirements
-
+###### All the libraries used in this example can be installed using pip with the requirements.txt file included. Open any terminal or command prompt and type in the following line. Use conda install if working with a conda environment. 
+```python
+pip install requirements.txt
+```
 
 ## Current Processing Methodology
 1. Scrape Reddit 
