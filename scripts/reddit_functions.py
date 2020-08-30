@@ -29,18 +29,21 @@ def preprocess(sent):
     nouns = [word for (word, pos) in sent if pos in ['NNP']]
     return nouns
 
+# Identify if a ticker exists in text 
 def regex(nouns):
     companies = []
     for i in nouns:
         try:
             company = re.search('[A-Z]{1,4}',i.strip()).group(0)
-            if (len(company) > 1) and (company not in ['AI']):
+            if (len(company) > 1) and (company not in ['AI','DD','CDC','PE',\
+                'CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS','NEW']]):
                 companies.append(company)
         except:
             pass
     companies = (list(set(companies)))
     return companies
 
+# Download tocker data from the start of 2020-01-01 to the most recent date
 def stock_price(tickers):
     ticker_list = []
     for i in tickers:
@@ -48,25 +51,20 @@ def stock_price(tickers):
         df_yf['ticker'] = i
         ticker_list.append(df_yf)
 
+# Find the date of the most recent weekday
 def prev_weekday(adate):
     adate -= timedelta(days=1)
     while adate.weekday() > 4: # Mon-Fri are 0-4
         adate -= timedelta(days=1)
     return str(adate)
 
+# Use vader sentiment to identify how positive a comment is
 def sentiment(df):
     df['tik_sentiment'] = df.tik_comment.apply(lambda x: analyzer.polarity_scores(text = x))
     df['pos'] = df['tik_sentiment'].apply(lambda x: x['pos'])
     df['neg'] = df['tik_sentiment'].apply(lambda x: x['neg'])
 
-
-def update_gsheet(key, sheet, df):
-    gc = gspread.service_account()
-    ws = gc.open_by_key(key).worksheet(sheet)
-    existing = gd.get_as_dataframe(ws)
-    updated = existing.append(df)
-    gd.set_with_dataframe(ws, updated)
-
+# Find difference in between dates utilizing only weekdays. This number is used in calculating daily average return 
 def date_diff(date):
     s = pd.date_range(date, datetime.today()-timedelta(days=1), freq='D').to_series()
     d = s.dt.weekday.reset_index()
@@ -74,6 +72,7 @@ def date_diff(date):
     num_days = d[d['bus_day'].isin(range(5))].shape[0]
     return num_days          
 
+# Read in data from google sheets
 def read_gsheet(key, sheet):
     gc = gspread.service_account()
     sh = gc.open_by_key(key)
@@ -82,6 +81,7 @@ def read_gsheet(key, sheet):
     df['tik_time'] = df['tik_time'].apply(lambda x: datetime.strptime(x[:10],r'%Y-%m-%d'))
     return df
 
+# Calculate ticker data for each unique comment. 
 def ticker_data(df):
     # Get ticker data 
     tickers = list(df.tik.values)
@@ -101,15 +101,13 @@ def ticker_data(df):
             df.loc[i,'tik_day_of_comment'] = 0.00069
 
     # Filter out stocks we couldn't find values for 
-    df_1 = df[df.tik_day_of_comment > .001]
-    
+    df_1 = df[(df.tik_today > .001) | (df.tik_day_of_comment > .001)]
+    df_1 = df_1.reset_index(drop = True)
+
     return df_1
 
 # Get stats for each individual comment
 def extract_stats(df):
-    # Filter out comments who we can't find data for
-    df_1 = df[(df.tik_today > .001) | (df.tik_day_of_comment > .001)].copy()
-    df_1 = df_1.reset_index(drop = True)
     # Equations to find how stocks performed
     df_1['tik_change'] = df_1['tik_today']/df_1['tik_day_of_comment']
     df_1['tik_change_normalized'] = df_1.apply(lambda x: ((x.tik_today - x.tik_day_of_comment) / np.round(x.tik_day_of_comment,6)/ date_diff(x.tik_time)), axis = 1)
