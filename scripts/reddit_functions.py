@@ -36,7 +36,7 @@ def regex(nouns):
         try:
             company = re.search('[A-Z]{1,4}',i.strip()).group(0)
             if (len(company) > 1) and (company not in ['AI','DD','CDC','PE',\
-                'CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS','NEW']]):
+                'CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS','NEW']):
                 companies.append(company)
         except:
             pass
@@ -109,9 +109,9 @@ def ticker_data(df):
 # Get stats for each individual comment
 def extract_stats(df):
     # Equations to find how stocks performed
-    df_1['tik_change'] = df_1['tik_today']/df_1['tik_day_of_comment']
-    df_1['tik_change_normalized'] = df_1.apply(lambda x: ((x.tik_today - x.tik_day_of_comment) / np.round(x.tik_day_of_comment,6)/ date_diff(x.tik_time)), axis = 1)
-    return df_1
+    df['tik_change'] = df['tik_today']/df['tik_day_of_comment']
+    df['tik_change_normalized'] = df.apply(lambda x: ((x.tik_today - x.tik_day_of_comment) / np.round(x.tik_day_of_comment,6)/ date_diff(x.tik_time)), axis = 1)
+    return df
 
 # Join the initial scrape df with user dataframe
 def combine_scrape_user(df_scrape, df_user):
@@ -135,9 +135,6 @@ def combine_scrape_user(df_scrape, df_user):
     # renaming of columns
     df_combined_2.columns = list(common_columns) + ['tik_change_normalized_mean','tik_change_normalized_count','first_redditor']
     
-    # DD and CDC have been very common so let's remove them
-    df_combined_2 = df_combined_2[~df_combined_2.tik.isin(['DD','CDC','PE','CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS','NEW'])]    
-
     # Drop any uplicates that may be found
     df_combined_2.drop_duplicates(['tik_time','tik_author','tik','tik_comment'], inplace = True)    
     

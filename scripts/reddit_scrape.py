@@ -31,6 +31,6 @@ from subreddit_class import subreddit
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 if __name__ == "__main__":
     # set use_gsheet = False if you would like to use excel instead of google sheets. 
-    subreddit = subreddit(use_gsheet = True)
-    subreddit.main_func(['stocks','investing','StockMarket'], use_gsheet = True)
+    subreddit = subreddit()
+    subreddit.main(['stocks','investing','StockMarket'], use_gsheet = False)
 
