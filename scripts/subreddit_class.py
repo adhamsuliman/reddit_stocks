@@ -42,15 +42,14 @@ class subreddit:
 
         self.ticker = pd.read_csv('../data/ticker.csv')
 
-        
-
+    
     def subreddit_scrape(self, subreddits, df_scrape_legacy):
         post_body, post_score, post_id, post_time =  [], [], [], []
         tik_name, tik, tik_author, tik_score, tik_comment, tik_time, tik_sentiment = [], [], [], [], [], [], []
-        tik_pos, tik_neg = [], []
+        tik_pos, tik_neg, tik_compound = [], [], []
         ticker = self.ticker
 
-        if df_scrape_legacy == None:
+        if df_scrape_legacy is None:
             for sub in subreddits:
                 subreddit_1 = self.reddit.subreddit(sub).top(limit = 1000)
                 for submission in subreddit_1: 
@@ -75,6 +74,7 @@ class subreddit:
                                     sentiment = analyzer.polarity_scores(text = comments.body)
                                     tik_pos.append(sentiment['pos'])
                                     tik_neg.append(sentiment['neg'])
+                                    tik_compound.append(sentiment['compound'])
 
                                     # add post elements here 
                                     post_time.append(datetime.fromtimestamp(submission.created).date())
@@ -84,7 +84,7 @@ class subreddit:
                                     pass
         else:
             for sub in subreddits:
-                subreddit_1 = self.reddit.subreddit(sub).new()
+                subreddit_1 = self.reddit.subreddit(sub).top("year",limit = 1000)
                 for submission in subreddit_1: 
                     if submission.id not in df_scrape_legacy.post_id.values:
                         submission.comments.replace_more(limit=0)
@@ -108,6 +108,7 @@ class subreddit:
                                         sentiment = analyzer.polarity_scores(text = comments.body)
                                         tik_pos.append(sentiment['pos'])
                                         tik_neg.append(sentiment['neg'])
+                                        tik_compound.append(sentiment['compound'])
 
                                         # add post elements here 
                                         post_time.append(datetime.fromtimestamp(submission.created).date())
@@ -116,9 +117,9 @@ class subreddit:
                                     except:
                                         pass
 
-        df = pd.DataFrame(list(zip(post_id, post_score, post_time, tik_author, tik, tik_score,\
+        df = pd.DataFrame(list(zip(post_id, post_score, post_time, tik_author, tik, tik_score, tik_compound,\
             tik_name, tik_pos, tik_neg, tik_comment, tik_time)), columns= [ 'post_id', 'post_score', 'post_time', \
-            'tik_author','tik', 'tik_score', 'tik_name', 'tik_pos','tik_neg', 'tik_comment', 'tik_time'])
+            'tik_author','tik', 'tik_score', 'tik_compound','tik_name', 'tik_pos','tik_neg', 'tik_comment', 'tik_time'])
         df.drop_duplicates(['tik_time','tik_author','tik','tik_score','tik_comment'], inplace = True)
         
         if isinstance(df_scrape_legacy, pd.DataFrame):
@@ -127,42 +128,50 @@ class subreddit:
         else:
             df_1 = df
 
+        # Found tik_author that was an empty string. deleting rows with '' as value. 
+        df_1 = df_1.replace('', np.nan).dropna().reset_index(drop=True)
+        
         return df_1
   
     def user_scrape(self,df, df_user_scrape_legacy ):
         users = df.tik_author.unique()
         tik_name, tik, tik_author, tik_score, tik_comment, tik_time, tik_sentiment = [], [], [], [], [], [], []
-        tik_pos, tik_neg = [], []
+        tik_pos, tik_neg, tik_compound = [], [], []
         ticker = self.ticker
 
-        if df_user_scrape_legacy == None:
+        
+        if df_user_scrape_legacy is None:
             for u in users:
                 try:
-                    for comment in self.reddit.redditor(str(u)).comments.top(limit=None): 
+                    for comment in self.reddit.redditor(str(u)).comments.top(limit=100): 
                         if (str(comment.subreddit).lower() in ['stocks','investing','stockmarket']) and (comment.score > 3):
                             comments_body = comment.body
                             companies = preprocess(comments_body)
                             companies = regex(companies)
-                            for i in companies:
-                                try:
-                                    # add comment elements here
-                                    tik_name.append(ticker[ticker.stock == i.upper()]['name_1'].values[0])
-                                    tik.append(i)
-                                    tik_author.append(comment.author)
-                                    tik_comment.append(comment.body)
-                                    tik_score.append(comment.score)
-                                    tik_time.append(datetime.fromtimestamp(comment.created).date())
-                                    sentiment = analyzer.polarity_scores(text = comment.body)
-                                    tik_pos.append(sentiment['pos'])
-                                    tik_neg.append(sentiment['neg'])
-                                except:
-                                    pass
-                except Forbidden:
-                    time.sleep(120)
+                            if len(companies) > 0:
+                                for i in companies:
+                                    try:
+                                        # add comment elements here
+                                        tik_name.append(ticker[ticker.stock == i.upper()]['name_1'].values[0])
+                                        tik.append(i)
+                                        tik_author.append(comment.author)
+                                        tik_comment.append(comment.body)
+                                        tik_score.append(comment.score)
+                                        tik_time.append(datetime.fromtimestamp(comment.created).date())
+                                        sentiment = analyzer.polarity_scores(text = comment.body)
+                                        tik_pos.append(sentiment['pos'])
+                                        tik_neg.append(sentiment['neg'])
+                                        tik_compound.append(sentiment['compound'])
+                                    except:
+                                        pass
+                except (Forbidden, AssertionError) as e:
+                    print(e)
+                except ResponseException as e:
+                    print(e)
         else:
             for u in users:
                 try:
-                    if (u in df_user_scrape_legacy.tik_author.values) and isinstance(df_user_scrape_legacy, pd.DataFrame) :
+                    if u in df_user_scrape_legacy.tik_author.values:
                         # Find the most recent time a user commented and convert it to utc time 
                         df_user_scrape_legacy_copy = df_user_scrape_legacy[df_user_scrape_legacy.tik_author == u].copy()
                         x = df_user_scrape_legacy_copy.groupby('tik_author')['tik_time'].max()
@@ -174,45 +183,53 @@ class subreddit:
                                 comments_body = comment.body
                                 companies = preprocess(comments_body)
                                 companies = regex(companies)
-                                for i in companies:
-                                    try:
-                                        # add comment elements here
-                                        tik_name.append(ticker[ticker.stock == i.upper()]['name_1'].values[0])
-                                        tik.append(i)
-                                        tik_author.append(comment.author)
-                                        tik_comment.append(comment.body)
-                                        tik_score.append(comment.score)
-                                        tik_time.append(datetime.fromtimestamp(comment.created).date())
-                                        sentiment = analyzer.polarity_scores(text = comment.body)
-                                        tik_pos.append(sentiment['pos'])
-                                        tik_neg.append(sentiment['neg'])
-                                    except:
-                                        pass
+                                if len(companies) > 0:
+                                    for i in companies:
+                                        try:
+                                            # add comment elements here
+                                            tik_name.append(ticker[ticker.stock == i.upper()]['name_1'].values[0])
+                                            tik.append(i)
+                                            tik_author.append(comment.author)
+                                            tik_comment.append(comment.body)
+                                            tik_score.append(comment.score)
+                                            tik_time.append(datetime.fromtimestamp(comment.created).date())
+                                            sentiment = analyzer.polarity_scores(text = comment.body)
+                                            tik_pos.append(sentiment['pos'])
+                                            tik_neg.append(sentiment['neg'])
+                                            tik_compound.append(sentiment['compound'])
+                                        except:
+                                            pass
                     else:
-                        for comment in self.reddit.redditor(str(u)).comments.top(limit=None): 
+                        for comment in self.reddit.redditor(str(u)).comments.top(limit=100): 
                             if (str(comment.subreddit).lower() in ['stocks','investing','stockmarket']) and (comment.score > 3):
                                 comments_body = comment.body
                                 companies = preprocess(comments_body)
                                 companies = regex(companies)
-                                for i in companies:
-                                    try:
-                                        # add comment elements here
-                                        tik_name.append(ticker[ticker.stock == i.upper()]['name_1'].values[0])
-                                        tik.append(i)
-                                        tik_author.append(comment.author)
-                                        tik_comment.append(comment.body)
-                                        tik_score.append(comment.score)
-                                        tik_time.append(datetime.fromtimestamp(comment.created).date())
-                                        sentiment = analyzer.polarity_scores(text = comment.body)
-                                        tik_pos.append(sentiment['pos'])
-                                        tik_neg.append(sentiment['neg'])
-                                    except:
-                                        pass
-                except Forbidden:
-                    time.sleep(120)
+                                if len(companies) > 0:
+                                    for i in companies:
+                                        try:
+                                            # add comment elements here
+                                            tik_name.append(ticker[ticker.stock == i.upper()]['name_1'].values[0])
+                                            tik.append(i)
+                                            tik_author.append(comment.author)
+                                            tik_comment.append(comment.body)
+                                            tik_score.append(comment.score)
+                                            tik_time.append(datetime.fromtimestamp(comment.created).date())
+                                            sentiment = analyzer.polarity_scores(text = comment.body)
+                                            tik_pos.append(sentiment['pos'])
+                                            tik_neg.append(sentiment['neg'])
+                                            tik_compound.append(sentiment['compound'])
+                                        except:
+                                            pass
+                except (Forbidden, AssertionError) as e:
+                    print(e)
+                except ResponseException as e:
+                    print(e)    
 
-        df_1 = pd.DataFrame(list(zip(tik_time,tik_author, tik, tik_score,tik_name,tik_pos, tik_neg, tik_comment,)), \
-            columns= ['tik_time','tik_author','tik', 'tik_score', 'tik_name', 'tik_pos', 'tik_neg','tik_comment'])
+
+
+        df_1 = pd.DataFrame(list(zip(tik_time,tik_author, tik, tik_score,tik_name,tik_pos, tik_neg, tik_compound, tik_comment,)), \
+            columns= ['tik_time','tik_author','tik', 'tik_score', 'tik_name', 'tik_pos', 'tik_neg', 'tik_compound', 'tik_comment'])
         df_1.drop_duplicates(['tik_time','tik_author','tik','tik_score','tik_comment'], inplace = True)
         
         # Concat new dataframe with legacy dataframe 
@@ -222,18 +239,51 @@ class subreddit:
         else:
             df_user_final = df_1
         
+        df_user_final = df_user_final.replace('', np.nan).dropna().reset_index(drop=True)
+
         return df_user_final
-   
+
+
+    def combine_scrape_user(df_scrape, df_user):
+        # Combine both the scrape and user dataframes
+        common_columns = df_user.columns
+        df_combined = pd.concat([df_scrape[common_columns], df_user[common_columns]]).reset_index(drop = True)
+        df_combined_1 = df_combined.drop_duplicates(subset = common_columns[:4], keep = "first").reset_index(drop = True).copy()
+        
+        # DD and CDC have been very common so let's remove them
+        df_combined_1 = df_combined_1[~df_combined_1.tik.isin(['DD','CDC','PE','CEO','ATH','IPO','IMO','GDP','WFH','USA','IRL','EV','USD','IRS','CBO','PER','HUGE', 'TA'])]    
+        
+        # Calculate stats by user 
+        #df_combined_1['tik_author'] = df_combined_1['tik_author'].apply(lambda x: str(x))
+        #df_grouped = df_combined_1.groupby(['tik_author'], as_index = False).agg({'tick_change_normalized':['mean','count']})
+
+        # Join the stats by user to oringinal dataframe
+        #df_combined_2 = df_combined_1.merge(df_grouped, on = 'tik_author',how = 'inner',suffixes = ('','_group')).copy()
+
+        #Identify first redditor
+        df_combined_1['tik_time_2'] = df_combined_1['tik_time'].apply(lambda x: int(x.strftime(r"%Y%m%d")))
+        df_combined_1['first_redditor'] = df_combined_1.groupby('tik')['tik_time_2'].rank(method = 'first')
+        df_combined_1.drop(columns=[ 'tik_time_2'],inplace = True)
+
+        # renaming of columns
+        df_combined_1.columns = list(common_columns) + ['first_redditor']
+
+        # Drop any uplicates that may be found
+        df_combined_1.drop_duplicates(['tik_time','tik_author','tik','tik_comment'], inplace = True)    
+
+        return df_combined_1
 
     def main(self, subreddit1, use_gsheet = True):
         # Read Gsheets or excel 
         if use_gsheet == True:
             df_scrape_legacy = read_gsheet(self.key, sheet = "Subreddit_Scrape")
             df_user_scrape_legacy = read_gsheet(self.key, sheet = 'User_Scrape')
+            print("Using Gsheets")
         else:
             try:
                 df_scrape_legacy = pd.read_csv('../data/subreddit_scrape.csv')
                 df_user_scrape_legacy = pd.read_csv('../data/user_scrape.csv')
+                print("Using Local Excel Files")
             except:
                 df_scrape_legacy = None
                 df_user_scrape_legacy = None
@@ -274,3 +324,5 @@ class subreddit:
             df_user_final.to_csv('../data/subreddit_scrape.csv', index = False)
         
         print(f'DONE! {datetime.now().date()}')
+
+
