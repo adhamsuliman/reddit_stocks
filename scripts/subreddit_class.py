@@ -15,7 +15,7 @@ import re
 import time
 from tqdm import tqdm
 import yfinance as yf
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer, ResponseException
 analyzer = SentimentIntensityAnalyzer()
 
 # Call functions file
