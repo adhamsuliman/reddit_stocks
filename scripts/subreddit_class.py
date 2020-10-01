@@ -10,12 +10,12 @@ import itertools
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 import praw
-from prawcore.exceptions import Forbidden
+from prawcore.exceptions import Forbidden, ResponseException
 import re 
 import time
 from tqdm import tqdm
 import yfinance as yf
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer, ResponseException
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyzer = SentimentIntensityAnalyzer()
 
 # Call functions file
