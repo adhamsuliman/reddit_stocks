@@ -3,6 +3,10 @@
 This repository contains python scripts which will scrape r/Stocks, r/Investing, and r/StockMarket. The goal is to scrape comments where there has been a stock ticker identified within the comment. The goal is to find redditors who consistently suggest stocks which provide high returns.
 
 ## How to get up and running
+I wrote a medium article which explains the inspiration behind this project. The article can be found in the link below:
+https://medium.com/@adhamsuliman/redditors-vs-the-market-a0e0833081c1
+
+## How to get up and running
 #### Reddit Application
 In order to use this repo, users must create a reddit application. Felippe Rodrigues wrote a great article on how to go about getting those credentials. The link to that article is provided below: 
 
