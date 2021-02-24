@@ -4,11 +4,12 @@ This repository contains python scripts which will scrape r/Stocks, r/Investing,
 
 ## Medium Article
 I wrote a medium article which explains the inspiration behind this project. The article can be found in the link below.
- - https://medium.com/@adhamsuliman/redditors-vs-the-market-a0e0833081c1
+
+https://medium.com/@adhamsuliman/redditors-vs-the-market-a0e0833081c1
 
 ## How to get up and running
 #### Reddit Application
-In order to use this repo, users must create a reddit application. Felippe Rodrigues wrote a great article on how to go about getting those credentials. The link to that article is provided below: 
+In order to use this repo, users must create a reddit application. Felippe Rodrigues wrote a great article on how to go about getting those credentials. The link to that article is provided below.
 
 https://www.storybench.org/how-to-scrape-reddit-with-python/
 
